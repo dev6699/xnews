@@ -1,86 +1,28 @@
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
-import { News, NewsList, list, view } from './src/services/news/ny';
-import * as Speech from 'expo-speech';
+import { useNews } from './src/hooks/useNews';
 
 export default function App() {
-  const [listLoading, setListLoading] = useState(false)
-  const [newsLoading, setNewsLoading] = useState(false)
-  const [page, setPage] = useState(0)
-  const [newsList, setNewsList] = useState<NewsList[]>([])
-  const [news, setNews] = useState<{ index: number, data: News } | null>(null)
-  const [speechState, setSpeechState] = useState<'idle' | 'play' | 'load-next'>('idle')
-
-  useEffect(() => {
-    (async () => {
-      setListLoading(true)
-      const n = await list(page)
-      setNewsList(n)
-      setListLoading(false)
-    })()
-  }, [page])
-
-  useEffect(() => {
-    if (!news) {
-      return
+  const {
+    state: {
+      provider,
+      providers,
+      listLoading,
+      newsLoading,
+      newsList,
+      news,
+      speechState,
+    },
+    actions: {
+      switchProvider,
+      refreshNewsList,
+      loadMoreNews,
+      viewNews,
+      viewNextNews,
+      viewPreviousNews,
+      closeNews,
+      toggleSpeech
     }
-
-    if (news.index + 5 > newsList.length) {
-      setPage(page + 1)
-    }
-  }, [news])
-
-  useEffect(() => {
-    let cancelled = false
-    if (!news) {
-      return
-    }
-
-    (async () => {
-
-      switch (speechState) {
-        case 'idle':
-          await Speech.stop()
-          break
-
-        case 'play':
-          startSpeech(news.data, news.index)
-          break
-
-        case 'load-next':
-          const nextIndex = news.index + 1
-          const nextNews = newsList[nextIndex]
-          const n = await view(nextNews.link)
-          if (cancelled) {
-            return
-          }
-          setNews({ index: nextIndex, data: n })
-          setSpeechState('play')
-          break
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [speechState])
-
-  const startSpeech = (newsSpeech: News, index: number) => {
-    const { title, date, contents } = newsSpeech
-    let text = `${title} ${date}`
-    for (const c of contents) {
-      if (c.type === 'text' || c.type === 'subtitle') {
-        text += ` ${c.data}`
-      }
-    }
-    // text = `${index}`
-    Speech.speak(text, {
-      language: 'zh',
-      onDone: () => {
-        setSpeechState('load-next')
-      },
-    })
-  }
+  } = useNews()
 
   return (
     <SafeAreaView
@@ -94,40 +36,61 @@ export default function App() {
           style={{ position: 'absolute', backgroundColor: 'rgba(0,0,0,0.1)', top: 0, bottom: 0, right: 0, left: 0 }}
         />
       }
+
       <StatusBar backgroundColor={'teal'} />
+
+      <FlatList
+        horizontal
+        data={providers}
+        renderItem={({ item, index }) => {
+          const active = provider === item;
+          return (
+            <TouchableOpacity
+              key={item + index}
+              onPress={() => switchProvider(item)}
+              style={{
+                paddingHorizontal: 15,
+              }}
+            >
+              <Text
+                style={{
+                  color: active ? 'teal' : 'black',
+                  padding: 10
+                }}
+              >
+                {item.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+
       <FlatList
         data={newsList}
-        onRefresh={() => {
-          setPage(0)
-        }}
+        onRefresh={refreshNewsList}
         refreshing={listLoading}
+        onEndReached={loadMoreNews}
         renderItem={({ item, index }) => {
           return (
             <TouchableOpacity
-              onPress={async () => {
-                if (newsLoading) {
-                  return
-                }
-                setNewsLoading(true)
-                const n = await view(item.link)
-                setNews({ index, data: n })
-                setNewsLoading(false)
+              onPress={() => {
+                viewNews(item.link, index)
               }}
             >
-              <View key={item.nid}
+              <View
+                key={item.nid}
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   padding: 10,
                   marginBottom: 10
-                }}>
+                }}
+              >
                 <View style={{ flex: 1, marginRight: 10, justifyContent: 'space-between' }}>
                   <Text style={{ fontWeight: '600' }}>{item.title}</Text>
-                  <View style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Text style={{ color: 'gray' }}>{item.created}</Text>
-                    <Text style={{ marginLeft: 10, fontWeight: '400', color: 'teal' }}>{item.channel}</Text>
-                  </View>
+                  <Text style={{ fontWeight: '400', color: 'teal' }}>{item.category}</Text>
+                  <Text style={{ color: 'gray' }}>{item.created}</Text>
                 </View>
 
                 <Image
@@ -137,28 +100,21 @@ export default function App() {
                     height: 90,
                     width: 90
                   }}
-                  source={{ uri: item.teaser_image }}
+                  source={{ uri: item.image }}
                 />
               </View>
-
             </TouchableOpacity>
           )
         }}
-        onEndReached={() => {
-          setPage(page + 1)
-        }}
       />
+
       {listLoading && <ActivityIndicator size={'large'} />}
 
       <Modal
         animationType="slide"
         visible={!!news}
         style={{ position: 'relative' }}
-        onRequestClose={async () => {
-          setSpeechState('idle')
-          await Speech.stop()
-          setNews(null);
-        }}>
+        onRequestClose={closeNews}>
         {newsLoading &&
           <ActivityIndicator size={'large'}
             style={{ position: 'absolute', backgroundColor: 'rgba(0,0,0,0.1)', top: 0, bottom: 0, right: 0, left: 0, zIndex: 999 }}
@@ -218,27 +174,13 @@ export default function App() {
                 justifyContent: 'center'
               }}
               disabled={news.index === 0}
-              onPress={async () => {
-                setSpeechState('idle')
-                setNewsLoading(true)
-                const n = await view(newsList[news.index - 1].link)
-                setNewsLoading(false)
-                setNews({ index: news.index - 1, data: n })
-              }}
+              onPress={viewPreviousNews}
             >
               <Text style={{ fontSize: 20, color: 'teal' }}>{'<'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               disabled={speechState === 'load-next'}
-              onPress={async () => {
-                if (speechState === 'load-next') {
-                  return
-                } else if (speechState === 'play') {
-                  setSpeechState('idle')
-                } else {
-                  setSpeechState('play')
-                }
-              }}
+              onPress={toggleSpeech}
               style={{
                 height: 50,
                 width: 50,
@@ -266,13 +208,7 @@ export default function App() {
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
-              onPress={async () => {
-                setSpeechState('idle')
-                setNewsLoading(true)
-                const n = await view(newsList[news.index + 1].link)
-                setNewsLoading(false)
-                setNews({ index: news.index + 1, data: n })
-              }}
+              onPress={viewNextNews}
             >
               <Text style={{ fontSize: 20, color: 'teal' }}>{'>'}</Text>
             </TouchableOpacity>

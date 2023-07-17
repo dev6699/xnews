@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { load } from 'cheerio';
 import { getTimeAgo } from '../../utils/time';
+import { BaseNews, Content, TNewsProvider } from './types';
 
 const BASE_URl = "https://www.enanyang.my"
 
-export type NewsList = {
+type NewsList = {
     title: string
     channel: string
     link: string
@@ -14,9 +15,9 @@ export type NewsList = {
     teaser_image: string
 }
 
-let lists: NewsList[] = []
+let lists: BaseNews[] = []
 
-export const list = async (page = 0): Promise<NewsList[]> => {
+export const list: TNewsProvider['list'] = async (page = 0) => {
     if (page === 0 && lists.length) {
         lists = []
     }
@@ -24,8 +25,11 @@ export const list = async (page = 0): Promise<NewsList[]> => {
 
     for (const d of (data as NewsList[])) {
         lists.push({
-            ...d,
-            teaser_image: `${BASE_URl}/${d.teaser_image}`,
+            link: d.link,
+            nid: `${d.nid}`,
+            title: d.title,
+            image: `${BASE_URl}/${d.teaser_image}`,
+            category: d.channel,
             created: getTimeAgo(+d.created * 1000)
         })
     }
@@ -33,28 +37,7 @@ export const list = async (page = 0): Promise<NewsList[]> => {
     return lists
 }
 
-type ImageContent = {
-    type: 'image'
-    uri: string
-    caption: string
-}
-type SubtitleContent = {
-    type: 'subtitle'
-    data: string
-}
-type TextContent = {
-    type: 'text'
-    data: string
-}
-type Content = ImageContent | SubtitleContent | TextContent
-
-export type News = {
-    title: string
-    date: string
-    contents: Content[]
-}
-
-export const view = async (link: string): Promise<News> => {
+export const view: TNewsProvider['view'] = async (link: string) => {
     const { data } = await axios.get(`${BASE_URl}/${link}`)
 
     const $ = load(data)
@@ -101,10 +84,11 @@ export const view = async (link: string): Promise<News> => {
         })
     })
 
-
     return {
         title,
         date,
         contents
     }
 }
+
+export const language: TNewsProvider['language'] = 'zh'

@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { load } from 'cheerio';
 import { BaseNews, Content, TNewsProvider } from './types';
+import { proxify } from './_proxy';
 
-const BASE_URl = "https://statementdog.com"
+const base_url = "https://statementdog.com"
+const BASE_URl = proxify(base_url)
 
 let lists: BaseNews[] = []
 
@@ -24,7 +26,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
             category.push($(cel).text().replaceAll('\n', '').replaceAll('\t', ''))
         })
         lists.push({
-            link: link,
+            link: link.replace(base_url, ''),
             nid: link,
             title: title.replaceAll('\n', '').replaceAll('\t', ''),
             image: image,
@@ -37,7 +39,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
 }
 
 export const view: TNewsProvider['view'] = async (link: string) => {
-    const { data } = await axios.get(link)
+    const { data } = await axios.get(`${BASE_URl}/${link}`)
 
     const $ = load(data)
 

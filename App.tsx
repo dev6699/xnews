@@ -1,5 +1,6 @@
 import { ActivityIndicator, FlatList, Image, Modal, SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { useNews } from './src/hooks/useNews';
+import { isWeb } from './src/utils/platform';
 
 export default function App() {
   const {
@@ -55,7 +56,8 @@ export default function App() {
               <Text
                 style={{
                   color: active ? 'teal' : 'black',
-                  padding: 10
+                  padding: 10,
+                  fontSize: 16
                 }}
               >
                 {item.toUpperCase()}
@@ -69,7 +71,34 @@ export default function App() {
         data={newsList}
         onRefresh={refreshNewsList}
         refreshing={listLoading}
-        onEndReached={loadMoreNews}
+        ListFooterComponent={() => {
+          if (!isWeb) {
+            return null
+          }
+          return (
+            <TouchableOpacity onPress={loadMoreNews}
+              style={{
+                marginHorizontal: 'auto',
+                marginVertical: 20,
+                backgroundColor: 'teal',
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 20
+              }}
+            >
+              <Text style={{ color: 'white' }}>Load More</Text>
+            </TouchableOpacity>
+          )
+        }}
+        onEndReached={() => {
+          if (isWeb) {
+            // weird behaviour in web, non-stop calling
+            return
+          }
+          loadMoreNews()
+        }
+        }
+        onEndReachedThreshold={0.5}
         renderItem={({ item, index }) => {
           return (
             <TouchableOpacity
@@ -88,9 +117,9 @@ export default function App() {
                 }}
               >
                 <View style={{ flex: 1, marginRight: 10, justifyContent: 'space-between' }}>
-                  <Text style={{ fontWeight: '600' }}>{item.title}</Text>
-                  <Text style={{ fontWeight: '400', color: 'teal' }}>{item.category}</Text>
-                  <Text style={{ color: 'gray' }}>{item.created}</Text>
+                  <Text style={{ fontWeight: '600', fontSize: 16 }}>{item.title}</Text>
+                  <Text style={{ fontWeight: '400', color: 'teal', fontSize: 12 }}>{item.category}</Text>
+                  <Text style={{ color: 'gray', fontSize: 12 }}>{item.created}</Text>
                 </View>
 
                 <Image
@@ -113,16 +142,21 @@ export default function App() {
       <Modal
         animationType="slide"
         visible={!!news}
-        style={{ position: 'relative' }}
         onRequestClose={closeNews}>
         {newsLoading &&
           <ActivityIndicator size={'large'}
             style={{ position: 'absolute', backgroundColor: 'rgba(0,0,0,0.1)', top: 0, bottom: 0, right: 0, left: 0, zIndex: 999 }}
           />
         }
-        <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
-          <Text style={{ fontSize: 20, fontWeight: '600' }} >{news?.data.title}</Text>
-          <Text>{news?.data.date}</Text>
+        <View style={{ paddingHorizontal: 20, paddingTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ paddingRight: isWeb ? 20 : 0 }}>
+            <Text style={{ fontSize: 24, fontWeight: '600' }} >{news?.data.title}</Text>
+            <Text style={{ fontSize: 20 }}>{news?.data.date}</Text>
+          </View>
+
+          {isWeb &&
+            <TouchableOpacity onPress={closeNews}><Text style={{ fontSize: 30 }}>X</Text></TouchableOpacity>
+          }
         </View>
         <ScrollView contentContainerStyle={{ padding: 20 }}>
           {
@@ -144,12 +178,12 @@ export default function App() {
 
               if (c.type === 'subtitle') {
                 return (
-                  <Text key={i} style={{ fontWeight: 'bold', fontSize: 16, marginTop: 10 }}>{c.data}</Text>
+                  <Text key={i} style={{ fontWeight: 'bold', fontSize: 24, marginTop: 10 }}>{c.data}</Text>
                 )
               }
 
               return (
-                <Text key={i} style={{ paddingVertical: 5 }}>{c.data}</Text>
+                <Text key={i} style={{ paddingVertical: 5, fontSize: 20 }}>{c.data}</Text>
               )
             })
           }

@@ -2,8 +2,9 @@ import axios from 'axios';
 import { load } from 'cheerio';
 import { getTimeAgo } from '../../utils/time';
 import { BaseNews, Content, TNewsProvider } from './types';
+import { proxify } from './_proxy';
 
-const BASE_URl = "https://www.enanyang.my"
+const BASE_URl = proxify("https://www.enanyang.my")
 
 type NewsList = {
     title: string

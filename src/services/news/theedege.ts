@@ -3,8 +3,9 @@ import { load } from 'cheerio';
 
 import { getTimeAgo } from '../../utils/time';
 import { BaseNews, Content, TNewsProvider } from './types';
+import { proxify } from './_proxy';
 
-const BASE_URl = "https://theedgemalaysia.com/"
+const BASE_URl = proxify("https://theedgemalaysia.com")
 
 type NewsList = {
     nid: string

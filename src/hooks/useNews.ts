@@ -14,6 +14,7 @@ export const useNews = () => {
     const [newsList, setNewsList] = useState<BaseNews[]>([])
     const [news, setNews] = useState<{ index: number, data: News } | null>(null)
     const [speechState, setSpeechState] = useState<'idle' | 'play' | 'load-next'>('idle')
+    const canRetry = useRef(false)
 
     const newsService = NewsService[provider]
 
@@ -22,11 +23,6 @@ export const useNews = () => {
     }, [])
 
     useEffect(() => {
-        let cancelled = false
-        if (!news) {
-            return
-        }
-
         (async () => {
             switch (speechState) {
                 case 'idle':
@@ -34,6 +30,9 @@ export const useNews = () => {
                     break
 
                 case 'play':
+                    if (!news) {
+                        return
+                    }
                     const { title, contents } = news.data
                     let text = `${title}`
                     for (const c of contents) {
@@ -46,21 +45,12 @@ export const useNews = () => {
                     break
 
                 case 'load-next':
-                    const nextIndex = news.index + 1
-                    const nextNews = newsList[nextIndex]
-                    const n = await newsService.view(nextNews.link)
-                    if (cancelled) {
-                        return
-                    }
-                    setNews({ index: nextIndex, data: n })
+                    await viewNextNews()
                     setSpeechState('play')
                     break
             }
         })()
 
-        return () => {
-            cancelled = true
-        }
     }, [speechState])
 
     const startSpeech = (text: string) => {
@@ -100,9 +90,20 @@ export const useNews = () => {
     const loadMoreNews = async () => {
         page.current = page.current + 1
         setListLoading(true)
-        const list = await newsService.list(page.current)
-        setNewsList(list)
-        setListLoading(false)
+        try {
+            const list = await newsService.list(page.current)
+            setNewsList(list)
+            setListLoading(false)
+        } catch (err) {
+            console.error(err)
+            await sleep(1)
+            if (canRetry.current) {
+                page.current = page.current - 1
+                await loadMoreNews()
+            } else {
+                setListLoading(false)
+            }
+        }
     }
 
     const switchProvider = async (provider: string) => {
@@ -115,32 +116,49 @@ export const useNews = () => {
     }
 
     const viewNews = async (link: string, index: number) => {
+        if (!canRetry.current) {
+            canRetry.current = true
+        }
         setNewsLoading(true)
-        const data = await newsService.view(link)
-        setNews({ index, data })
-        setNewsLoading(false)
-        setSpeechState('idle')
+        try {
+            const data = await newsService.view(link)
+            setNews({ index, data })
+            setNewsLoading(false)
+        } catch (err) {
+            console.error(err)
+            await sleep(1)
+            if (canRetry.current) {
+                await viewNews(link, index)
+            } else {
+                setNewsLoading(false)
+            }
+        }
     }
 
     const viewPreviousNews = async () => {
         if (!news) {
             return
         }
+        setSpeechState('idle')
         const previousIdx = news.index - 1
-        viewNews(newsList[previousIdx].link, previousIdx)
+        await viewNews(newsList[previousIdx].link, previousIdx)
     }
 
     const viewNextNews = async () => {
         if (!news) {
             return
         }
+        setSpeechState('idle')
         const nextIdx = news.index + 1
-        viewNews(newsList[nextIdx].link, nextIdx)
+        if (nextIdx >= newsList.length) {
+            await loadMoreNews()
+        }
+        await viewNews(newsList[nextIdx].link, nextIdx)
     }
 
     const closeNews = async () => {
+        canRetry.current = false
         setSpeechState('idle')
-        await Speech.stop()
         setNews(null);
     }
 
@@ -176,4 +194,12 @@ export const useNews = () => {
             speechState,
         }
     }
+}
+
+const sleep = async (time: number) => {
+    await new Promise((res) => {
+        setTimeout(() => {
+            res(true)
+        }, time * 1000)
+    })
 }

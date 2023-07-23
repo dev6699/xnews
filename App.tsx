@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, Image, Modal, SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Modal, SafeAreaView, ScrollView, StatusBar, Text, Pressable, View } from 'react-native';
 import { useNews } from './src/hooks/useNews';
 import { isWeb } from './src/utils/platform';
 
@@ -46,7 +46,7 @@ export default function App() {
         renderItem={({ item, index }) => {
           const active = provider === item;
           return (
-            <TouchableOpacity
+            <Pressable
               key={item + index}
               onPress={() => switchProvider(item)}
               style={{
@@ -62,7 +62,7 @@ export default function App() {
               >
                 {item.toUpperCase()}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           );
         }}
       />
@@ -76,7 +76,7 @@ export default function App() {
             return null
           }
           return (
-            <TouchableOpacity onPress={loadMoreNews}
+            <Pressable onPress={loadMoreNews}
               style={{
                 marginHorizontal: 'auto',
                 marginVertical: 20,
@@ -87,7 +87,7 @@ export default function App() {
               }}
             >
               <Text style={{ color: 'white' }}>Load More</Text>
-            </TouchableOpacity>
+            </Pressable>
           )
         }}
         onEndReached={() => {
@@ -101,7 +101,7 @@ export default function App() {
         onEndReachedThreshold={0.5}
         renderItem={({ item, index }) => {
           return (
-            <TouchableOpacity
+            <Pressable
               onPress={() => {
                 viewNews(item.link, index)
               }}
@@ -132,7 +132,7 @@ export default function App() {
                   source={{ uri: item.image }}
                 />
               </View>
-            </TouchableOpacity>
+            </Pressable>
           )
         }}
       />
@@ -149,13 +149,13 @@ export default function App() {
           />
         }
         <View style={{ paddingHorizontal: 20, paddingTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ paddingRight: isWeb ? 20 : 0 }}>
+          <View style={{ paddingRight: isWeb ? 20 : 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
             <Text style={{ fontSize: 24, fontWeight: '600' }} >{news?.data.title}</Text>
             <Text style={{ fontSize: 20 }}>{news?.data.date}</Text>
           </View>
 
           {isWeb &&
-            <TouchableOpacity onPress={closeNews}><Text style={{ fontSize: 30 }}>X</Text></TouchableOpacity>
+            <Pressable onPress={closeNews}><Text style={{ fontSize: 30 }}>X</Text></Pressable>
           }
         </View>
         <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -199,7 +199,7 @@ export default function App() {
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-            <TouchableOpacity
+            <Pressable
               style={{
                 height: 50,
                 width: 50,
@@ -211,8 +211,8 @@ export default function App() {
               onPress={viewPreviousNews}
             >
               <Text style={{ fontSize: 20, color: 'teal' }}>{'<'}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               disabled={speechState === 'load-next'}
               onPress={toggleSpeech}
               style={{
@@ -233,8 +233,8 @@ export default function App() {
                     :
                     <ActivityIndicator />
               }
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={{
                 height: 50,
                 width: 50,
@@ -245,7 +245,7 @@ export default function App() {
               onPress={viewNextNews}
             >
               <Text style={{ fontSize: 20, color: 'teal' }}>{'>'}</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         }
       </Modal>

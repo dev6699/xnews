@@ -20,3 +20,38 @@ export const getTimeAgo = (timestamp: number): string => {
         return `${day}/${month}/${year}`;
     }
 }
+
+// "Jul 23, 2023 09:42AM"
+export const dateStringToTimestamp = (dateString: string) => {
+    const months: { [key: string]: number } = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+        Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    const dateRegex = /^(\w{3}) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2})(AM|PM)$/;
+
+    const [, monthStr, day, year, hour, minute, ampm] = dateString.match(dateRegex) || [];
+
+    if (!monthStr || !day || !year || !hour || !minute || !ampm) {
+        throw new Error("Invalid date format");
+    }
+
+    const month = months[monthStr];
+    const isPM = ampm === "PM" || ampm === "pm";
+
+    let hour24 = parseInt(hour, 10);
+    if (isPM && hour24 !== 12) {
+        hour24 += 12;
+    } else if (!isPM && hour24 === 12) {
+        hour24 = 0;
+    }
+
+    const date = new Date(parseInt(year, 10), month, parseInt(day, 10), hour24, parseInt(minute, 10));
+    let timestamp = date.getTime();
+
+    // Add 12 hours in milliseconds
+    const eightHoursInMilliseconds = 12 * 60 * 60 * 1000;
+    timestamp += eightHoursInMilliseconds;
+
+    return timestamp;
+}

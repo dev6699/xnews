@@ -77,7 +77,7 @@ export const view: TNewsProvider['view'] = async (link) => {
         { type: 'image', uri: dataJSON.props.pageProps.data.img, caption: '' }
     ]
 
-    $2('div, h3').each((_, el) => {
+    $2('div, h3, li').each((_, el) => {
         if ($(el).text() === '') {
             return
         }

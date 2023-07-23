@@ -103,6 +103,9 @@ export default function App() {
           return (
             <Pressable
               onPress={() => {
+                if (newsLoading) {
+                  return
+                }
                 viewNews(item.link, index)
               }}
             >
@@ -183,7 +186,7 @@ export default function App() {
               }
 
               return (
-                <Text key={i} style={{ paddingVertical: 5, fontSize: 20 }}>{c.data}</Text>
+                <Text key={i} style={{ paddingVertical: 5, fontSize: 20, textAlign: 'justify' }}>{c.data}</Text>
               )
             })
           }

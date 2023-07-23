@@ -55,8 +55,6 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Copy headers from the original request to the new request
-	req.Header = r.Header
 	// Parse the existing query parameters from the target URL
 	existingQueryParams, _ := url.ParseQuery(target.RawQuery)
 

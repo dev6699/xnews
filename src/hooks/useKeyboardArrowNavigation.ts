@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isWeb } from '../utils/platform';
 
 export const useKeyboardArrowNavigation = (
     onLeftPress: () => void,
@@ -14,6 +15,9 @@ export const useKeyboardArrowNavigation = (
     };
 
     useEffect(() => {
+        if (!isWeb) {
+            return
+        }
         window.addEventListener('keydown', handleKeyDown);
 
         return () => {

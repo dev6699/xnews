@@ -141,6 +141,9 @@ export const useNews = () => {
         }
         setSpeechState('idle')
         const previousIdx = news.index - 1
+        if (previousIdx < 0) {
+            return
+        }
         await viewNews(newsList[previousIdx].link, previousIdx)
     }
 

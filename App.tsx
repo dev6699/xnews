@@ -1,6 +1,7 @@
 import { ActivityIndicator, FlatList, Image, Modal, SafeAreaView, ScrollView, StatusBar, Text, Pressable, View } from 'react-native';
 import { useNews } from './src/hooks/useNews';
 import { isWeb } from './src/utils/platform';
+import { useKeyboardArrowNavigation } from './src/hooks/useKeyboardArrowNavigation';
 
 export default function App() {
   const {
@@ -24,6 +25,11 @@ export default function App() {
       toggleSpeech
     }
   } = useNews()
+
+  useKeyboardArrowNavigation(
+    () => { viewPreviousNews() },
+    () => { viewNextNews() },
+  )
 
   return (
     <SafeAreaView

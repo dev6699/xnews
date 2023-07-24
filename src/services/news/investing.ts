@@ -18,6 +18,10 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     const $ = load(data)
 
     $('.largeTitle > article').each((_, el) => {
+        const isSponsor = $(el).find('.sponsoredBadge').html()
+        if (isSponsor !== null) {
+            return
+        }
         const link = `${BASE_URl}${$(el).find('.title').attr('href')}`.split(BASE_URl)[1]
         const title = $(el).find('.title').text()
         if (!title) {

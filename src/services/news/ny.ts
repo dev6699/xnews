@@ -72,7 +72,7 @@ export const view: TNewsProvider['view'] = async (link: string) => {
                 return
             }
 
-            if (text === '视频推荐：') {
+            if (text === '视频推荐：' || text === '视频推荐 ：') {
                 return
             }
 

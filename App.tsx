@@ -46,105 +46,110 @@ export default function App() {
 
       <StatusBar backgroundColor={'teal'} />
 
-      <FlatList
-        horizontal
-        data={providers}
-        renderItem={({ item, index }) => {
-          const active = provider === item;
-          return (
-            <Pressable
-              key={item + index}
-              onPress={() => switchProvider(item)}
-              style={{
-                paddingHorizontal: 15,
-              }}
-            >
-              <Text
+      <View>
+        <FlatList
+          horizontal
+          data={providers}
+          renderItem={({ item, index }) => {
+            const active = provider === item;
+            return (
+              <Pressable
+                key={item + index}
+                onPress={() => switchProvider(item)}
                 style={{
-                  color: active ? 'teal' : 'black',
-                  padding: 10,
-                  fontSize: 16
+                  paddingHorizontal: 15,
+                  paddingVertical: 5
                 }}
               >
-                {item.toUpperCase()}
-              </Text>
-            </Pressable>
-          );
-        }}
-      />
-
-      <FlatList
-        data={newsList}
-        onRefresh={refreshNewsList}
-        refreshing={listLoading}
-        ListFooterComponent={() => {
-          if (!isWeb) {
-            return null
-          }
-          return (
-            <Pressable onPress={loadMoreNews}
-              style={{
-                marginHorizontal: 'auto',
-                marginVertical: 20,
-                backgroundColor: 'teal',
-                paddingVertical: 10,
-                paddingHorizontal: 20,
-                borderRadius: 20
-              }}
-            >
-              <Text style={{ color: 'white' }}>Load More</Text>
-            </Pressable>
-          )
-        }}
-        onEndReached={() => {
-          if (isWeb) {
-            // weird behaviour in web, non-stop calling
-            return
-          }
-          loadMoreNews()
-        }
-        }
-        onEndReachedThreshold={0.5}
-        renderItem={({ item, index }) => {
-          return (
-            <Pressable
-              onPress={() => {
-                if (newsLoading) {
-                  return
-                }
-                viewNews(item.link, index)
-              }}
-            >
-              <View
-                key={item.nid}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  padding: 10,
-                  marginBottom: 10
-                }}
-              >
-                <View style={{ flex: 1, marginRight: 10, justifyContent: 'space-between' }}>
-                  <Text style={{ fontWeight: '600', fontSize: 16 }}>{item.title}</Text>
-                  <Text style={{ fontWeight: '400', color: 'teal', fontSize: 12 }}>{item.category}</Text>
-                  <Text style={{ color: 'gray', fontSize: 12 }}>{item.created}</Text>
-                </View>
-
-                <Image
-                  resizeMode='cover'
+                <Text
                   style={{
-                    borderRadius: 20,
-                    height: 90,
-                    width: 90
+                    color: active ? 'teal' : 'black',
+                    padding: 10,
+                    fontSize: 16
                   }}
-                  source={{ uri: item.image }}
-                />
-              </View>
-            </Pressable>
-          )
-        }}
-      />
+                >
+                  {item.toUpperCase()}
+                </Text>
+              </Pressable>
+            );
+          }}
+        />
+      </View>
+
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={newsList}
+          onRefresh={refreshNewsList}
+          refreshing={listLoading}
+          ListFooterComponent={() => {
+            if (!isWeb) {
+              return null
+            }
+            return (
+              <Pressable onPress={loadMoreNews}
+                style={{
+                  marginHorizontal: 'auto',
+                  marginVertical: 20,
+                  backgroundColor: 'teal',
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
+                  borderRadius: 20
+                }}
+              >
+                <Text style={{ color: 'white' }}>Load More</Text>
+              </Pressable>
+            )
+          }}
+          onEndReached={() => {
+            if (isWeb) {
+              // weird behaviour in web, non-stop calling
+              return
+            }
+            loadMoreNews()
+          }
+          }
+          onEndReachedThreshold={0.5}
+          renderItem={({ item, index }) => {
+            return (
+              <Pressable
+                onPress={() => {
+                  if (newsLoading) {
+                    return
+                  }
+                  viewNews(item.link, index)
+                }}
+              >
+                <View
+                  key={item.nid}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 10,
+                    marginBottom: 10
+                  }}
+                >
+                  <View style={{ flex: 1, marginRight: 10, justifyContent: 'space-between' }}>
+                    <Text style={{ fontWeight: '600', fontSize: 16 }}>{item.title}</Text>
+                    <Text style={{ fontWeight: '400', color: 'teal', fontSize: 12 }}>{item.category}</Text>
+                    <Text style={{ color: 'gray', fontSize: 12 }}>{item.created}</Text>
+                  </View>
+
+                  <Image
+                    resizeMode='cover'
+                    style={{
+                      borderRadius: 20,
+                      height: 90,
+                      width: 90
+                    }}
+                    source={{ uri: item.image }}
+                  />
+                </View>
+              </Pressable>
+            )
+          }}
+        />
+      </View>
 
       {listLoading && <ActivityIndicator size={'large'} />}
 

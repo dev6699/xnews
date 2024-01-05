@@ -38,11 +38,6 @@ export default function App() {
         position: 'relative'
       }}
     >
-      {newsLoading &&
-        <ActivityIndicator size={'large'}
-          style={{ position: 'absolute', backgroundColor: 'rgba(0,0,0,0.1)', top: 0, bottom: 0, right: 0, left: 0 }}
-        />
-      }
 
       <StatusBar backgroundColor={'teal'} />
 
@@ -77,6 +72,12 @@ export default function App() {
       </View>
 
       <View style={{ flex: 1 }}>
+        {newsLoading &&
+          <ActivityIndicator size={'large'}
+            style={{ position: 'absolute', backgroundColor: 'rgba(0,0,0,0.1)', top: 0, bottom: 0, right: 0, left: 0 }}
+          />
+        }
+
         <FlatList
           data={newsList}
           onRefresh={refreshNewsList}

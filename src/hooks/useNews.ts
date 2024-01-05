@@ -7,7 +7,7 @@ export const useNews = () => {
 
     const providers = Object.keys(NewsService)
     const [provider, setProvider] = useState<string>(providers[0])
-
+    const providerRef = useRef(providers[0])
     const page = useRef(0)
     const [listLoading, setListLoading] = useState(false)
     const [newsLoading, setNewsLoading] = useState(false)
@@ -107,27 +107,33 @@ export const useNews = () => {
     }
 
     const switchProvider = async (provider: string) => {
+        providerRef.current = provider
         setProvider(provider)
         page.current = 0
         setListLoading(true)
         const list = await NewsService[provider].list(page.current)
         setNewsList(list)
         setListLoading(false)
+        setNewsLoading(false)
     }
 
     const viewNews = async (link: string, index: number) => {
         if (!canRetry.current) {
             canRetry.current = true
         }
+        const p = providerRef.current
         setNewsLoading(true)
+
         try {
             const data = await newsService.view(link)
-            setNews({ index, data })
+            if (providerRef.current === p) {
+                setNews({ index, data })
+            }
             setNewsLoading(false)
         } catch (err) {
             console.error(err)
             await sleep(1)
-            if (canRetry.current) {
+            if (canRetry.current && providerRef.current === p) {
                 await viewNews(link, index)
             } else {
                 setNewsLoading(false)
@@ -175,7 +181,6 @@ export const useNews = () => {
         }
     }
 
-
     return {
         actions: {
             switchProvider,
@@ -201,8 +206,6 @@ export const useNews = () => {
 
 const sleep = async (time: number) => {
     await new Promise((res) => {
-        setTimeout(() => {
-            res(true)
-        }, time * 1000)
+        setTimeout(res, time * 1000)
     })
 }

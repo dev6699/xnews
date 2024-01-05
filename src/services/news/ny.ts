@@ -1,8 +1,7 @@
-import axios from 'axios';
 import { load } from 'cheerio';
 import { getTimeAgo } from '../../utils/time';
 import { BaseNews, Content, TNewsProvider } from './types';
-import { proxify } from './_proxy';
+import { proxify, request } from './_proxy';
 
 const BASE_URl = proxify("https://www.enanyang.my")
 
@@ -22,7 +21,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     if (page === 0 && lists.length) {
         lists = []
     }
-    const { data } = await axios.get(`${BASE_URl}/api/get/home/articles?page=${page}`);
+    const data = await request(`${BASE_URl}/api/get/home/articles?page=${page}`).then(r => r.json());
 
     for (const d of (data as NewsList[])) {
         lists.push({
@@ -39,7 +38,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
 }
 
 export const view: TNewsProvider['view'] = async (link: string) => {
-    const { data } = await axios.get(`${BASE_URl}/${link}`)
+    const data = await request(`${BASE_URl}/${link}`).then(r => r.text())
 
     const $ = load(data)
 

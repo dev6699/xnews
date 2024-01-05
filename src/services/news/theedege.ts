@@ -1,9 +1,8 @@
-import axios from 'axios';
 import { load } from 'cheerio';
 
 import { getTimeAgo } from '../../utils/time';
 import { BaseNews, Content, TNewsProvider } from './types';
-import { proxify } from './_proxy';
+import { proxify, request } from './_proxy';
 
 const BASE_URl = proxify("https://theedgemalaysia.com")
 
@@ -38,7 +37,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     }
     const offset = page * 10
 
-    const { data } = await axios.get(`${BASE_URl}/api/loadMoreOption?offset=${offset}&option=top`);
+    const data = await request(`${BASE_URl}/api/loadMoreOption?offset=${offset}&option=top`).then(r => r.json());
 
     for (const d of (data as { results: NewsList[] }).results) {
         lists.push({
@@ -55,7 +54,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
 }
 
 export const view: TNewsProvider['view'] = async (link) => {
-    const { data } = await axios.get(`${BASE_URl}/${link}`)
+    const data = await request(`${BASE_URl}/${link}`).then(r => r.text());
 
     const $ = load(data)
     const dataStr = $('#__NEXT_DATA__').text()

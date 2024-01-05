@@ -1,8 +1,7 @@
-import axios from 'axios';
 import { load } from 'cheerio';
 
 import { BaseNews, Content, TNewsProvider } from './types';
-import { proxify } from './_proxy';
+import { proxify, request } from './_proxy';
 import { dateStringToTimestamp, getTimeAgo } from '../../utils/time';
 
 const BASE_URl = proxify("https://www.investing.com")
@@ -14,12 +13,16 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
         lists = []
     }
 
-    const { data } = await axios.get(`${BASE_URl}/news/stock-market-news/${page + 1}`);
+    const data = await request(`${BASE_URl}/news/stock-market-news/${page + 1}`).then(r => r.text());
     const $ = load(data)
 
     $('.largeTitle > article').each((_, el) => {
         const isSponsor = $(el).find('.sponsoredBadge').html()
         if (isSponsor !== null) {
+            return
+        }
+        const isPro = $(el).find('div > p > .pro-title-list-icon').html()
+        if (isPro !== null) {
             return
         }
         const link = `${BASE_URl}${$(el).find('.title').attr('href')}`.split(BASE_URl)[1]
@@ -40,7 +43,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
 }
 
 export const view: TNewsProvider['view'] = async (link) => {
-    const { data } = await axios.get(`${BASE_URl}/${link}`)
+    const data = await request(`${BASE_URl}/${link}`).then(r => r.text());
 
     const $ = load(data)
     const contents: Content[] = [

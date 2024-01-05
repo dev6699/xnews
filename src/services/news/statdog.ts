@@ -1,7 +1,6 @@
-import axios from 'axios';
 import { load } from 'cheerio';
 import { BaseNews, Content, TNewsProvider } from './types';
-import { proxify } from './_proxy';
+import { proxify, request } from './_proxy';
 
 const base_url = "https://statementdog.com"
 const BASE_URl = proxify(base_url)
@@ -12,7 +11,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     if (page === 0 && lists.length) {
         lists = []
     }
-    const { data } = await axios.get(`${BASE_URl}/news?page=${page + 1}`);
+    const data = await request(`${BASE_URl}/news?page=${page + 1}`).then(r => r.text());
 
     const $ = load(data)
     $('.statementdog-news-list-item').each((_, el) => {
@@ -39,7 +38,7 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
 }
 
 export const view: TNewsProvider['view'] = async (link: string) => {
-    const { data } = await axios.get(`${BASE_URl}/${link}`)
+    const data = await request(`${BASE_URl}/${link}`).then(r => r.text());
 
     const $ = load(data)
 

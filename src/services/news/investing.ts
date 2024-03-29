@@ -16,68 +16,105 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     const data = await request(`${BASE_URl}/news/stock-market-news/${page + 1}`).then(r => r.text());
     const $ = load(data)
 
-    $('.largeTitle > article').each((_, el) => {
-        const isSponsor = $(el).find('.sponsoredBadge').html()
-        if (isSponsor !== null) {
-            return
+    const dataStr = $('#__NEXT_DATA__').text()
+    const dataJSON = JSON.parse(dataStr) as {
+        props: {
+            pageProps: {
+                state: string
+            }
         }
-        const isPro = $(el).find('div > p > .pro-title-list-icon').html()
-        if (isPro !== null) {
-            return
+    }
+    const { dataStore: { newsStore: { _newsList } } } = JSON.parse(dataJSON.props.pageProps.state) as {
+        dataStore: {
+            newsStore: {
+                _newsList:
+                {
+                    article_ID: string
+                    title: string
+                    shortTitle: string
+                    href: string
+                    imageHref: string
+                    provider: string
+                    date: string
+                    commentsCounter: string
+                    snippet: string
+                    openInNewTab: boolean
+                    mediumImageHref: string
+                    news_type: string
+                }[]
+            }
         }
-        const link = `${BASE_URl}${$(el).find('.title').attr('href')}`.split(BASE_URl)[1]
-        const title = $(el).find('.title').text()
-        if (!title) {
-            return
-        }
+    }
+
+    _newsList.forEach(n => {
+        const created = new Date(n.date)
+        created.setTime(created.getTime() + 8 * 60 * 60 * 1000)
         lists.push({
-            link,
-            nid: link,
-            title,
-            image: $(el).find('img').attr('data-src')!,
+            link: n.href,
+            nid: n.href,
+            title: n.title,
+            image: n.imageHref,
             category: '',
-            created: $(el).find('.date').text().split(' - ')[1]
+            created: getTimeAgo(created.getTime()),
         })
     })
+
+
     return lists
 }
 
 export const view: TNewsProvider['view'] = async (link) => {
     const data = await request(`${BASE_URl}/${link}`).then(r => r.text());
 
-    const $ = load(data)
+    const $data = load(data)
+    const dataStr = $data('#__NEXT_DATA__').text()
+    const dataJSON = JSON.parse(dataStr) as {
+        props: {
+            pageProps: {
+                state: string
+            }
+        }
+    }
+    const { dataStore: { newsStore: { _newsArticle } } } = JSON.parse(dataJSON.props.pageProps.state) as {
+        dataStore: {
+            newsStore: {
+                _newsArticle: {
+                    HEADLINE: string
+                    BODY: string
+                    last_updated: string
+                    related_image_big: string
+                    image_caption: string
+                }
+            }
+        }
+    }
+
+    const $ = load(_newsArticle.BODY)
     const contents: Content[] = [
-        { type: 'image', uri: $('#carouselImage').attr('src')!, caption: '' }
+        {
+            type: 'image',
+            uri: $('img').attr('src') || `https://i-invdn-com.investing.com/news/${_newsArticle.related_image_big}`,
+            caption: $('img').attr('title') || _newsArticle.image_caption
+        }
     ]
 
-    $('.articlePage > p, h2').each((_, el) => {
-        const text = $(el).text()
-        if (text === '' || text === 'Related Articles') {
-            return
-        }
-        if (el.tagName === 'h2') {
-            contents.push(
-                {
-                    type: 'subtitle',
-                    data: text
-                }
-            )
-        } else {
-            contents.push(
-                {
-                    type: 'text',
-                    data: text
-                }
-            )
-        }
+
+
+    $('p').each((_, el) => {
+        const text = $data(el).text()
+        contents.push(
+            {
+                type: 'text',
+                data: text
+            }
+        )
     })
 
-    const published = $('.contentSectionDetails > span:first-child').text().replace('Published ', '').replace(' ET', '')
-    const updated = $('.contentSectionDetails > span:nth-child(2)').text().replace('Updated ', '').replace(' ET', '')
-
+    const date = new Date(_newsArticle.last_updated)
+    date.setTime(date.getTime() + 8 * 60 * 60 * 1000)
     return {
-        title: $('title').text(),
-        date: getTimeAgo(dateStringToTimestamp(updated || published)),
+        title: _newsArticle.HEADLINE,
+        date: getTimeAgo(date.getTime()),
         contents: contents,
     }
 }

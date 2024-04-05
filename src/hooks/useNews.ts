@@ -1,13 +1,19 @@
-import { useEffect, useRef, useState } from "react"
+import { createContext, useContext, useEffect, useRef, useState } from "react"
 import * as Speech from 'expo-speech';
+import { router } from "expo-router";
 
+import { toBase64 } from "../utils/encode";
 import { NewsService, BaseNews, News } from "../services/news";
+
+export type TNewsContext = ReturnType<typeof useNews>
+export const NewsContext = createContext<TNewsContext>({} as TNewsContext);
+export const useNewsContext = () => useContext(NewsContext);
 
 export const useNews = () => {
 
     const providers = Object.keys(NewsService)
     const [provider, setProvider] = useState<string>(providers[0])
-    const providerRef = useRef(providers[0])
+    const providerRef = useRef('')
     const page = useRef(0)
     const [listLoading, setListLoading] = useState(false)
     const [newsLoading, setNewsLoading] = useState(false)
@@ -16,11 +22,6 @@ export const useNews = () => {
     const [speechState, setSpeechState] = useState<'idle' | 'play' | 'load-next'>('idle')
     const canRetry = useRef(false)
 
-    const newsService = NewsService[provider]
-
-    useEffect(() => {
-        refreshNewsList()
-    }, [])
 
     useEffect(() => {
         (async () => {
@@ -71,7 +72,7 @@ export const useNews = () => {
         }
 
         Speech.speak(currentText, {
-            language: newsService.language,
+            language: NewsService[providerRef.current].language,
             onDone: () => {
                 if (remainingText) {
                     startSpeech(remainingText)
@@ -91,7 +92,7 @@ export const useNews = () => {
         page.current = page.current + 1
         setListLoading(true)
         try {
-            const list = await newsService.list(page.current)
+            const list = await NewsService[providerRef.current].list(page.current)
             setNewsList(list)
             setListLoading(false)
         } catch (err) {
@@ -107,6 +108,9 @@ export const useNews = () => {
     }
 
     const switchProvider = async (provider: string) => {
+        if (providerRef.current === provider) {
+            return
+        }
         providerRef.current = provider
         setProvider(provider)
         page.current = 0
@@ -125,9 +129,10 @@ export const useNews = () => {
         setNewsLoading(true)
 
         try {
-            const data = await newsService.view(link)
+            const data = await NewsService[p].view(link)
             if (providerRef.current === p) {
                 setNews({ index, data })
+                router.push(`/news/${p}/${toBase64(link)}?index=${index}`);
             }
             setNewsLoading(false)
         } catch (err) {

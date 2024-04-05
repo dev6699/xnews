@@ -27,10 +27,12 @@ export default function News() {
 
 
     useEffect(() => {
+        // news is defined if called from news list
         if (news) {
             return
         }
 
+        // news is undefined if url is loaded directly, so we need to load the news
         (async () => {
             if (!params.id || params.index === undefined || !params.provider) {
                 return
@@ -38,7 +40,7 @@ export default function News() {
             await switchProvider(params.provider)
             await viewNews(fromBase64(params.id), +params.index)
         })()
-    }, [news, params])
+    }, [news])
 
     useKeyboardArrowNavigation(
         () => { viewPreviousNews() },

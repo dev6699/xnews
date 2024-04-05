@@ -17,12 +17,14 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     $('.statementdog-news-list-item').each((_, el) => {
         const image = $(el).find('img').attr('src')!
 
-        const title = $(el).find('.statementdog-news-list-item-title').text()
-        const created = $(el).find('.statementdog-news-list-item-date').text()
+        let title = $(el).find('.statementdog-news-list-item-title').text()
+        title = title.replaceAll(" ", "")
+        let created = $(el).find('.statementdog-news-list-item-date').text()
+        created = created.replaceAll(" ", "")
         const link = $(el).find('.statementdog-news-list-item-content').find('a').attr('href')!
         const category: string[] = []
         $(el).find('.statementdog-news-list-item-tag-list-item').each((_, cel) => {
-            category.push($(cel).text().replaceAll('\n', '').replaceAll('\t', ''))
+            category.push($(cel).text().replaceAll('\n', '').replaceAll('\t', '').replaceAll(" ", ""))
         })
         lists.push({
             link: link.replace(base_url, ''),

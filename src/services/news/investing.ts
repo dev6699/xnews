@@ -20,32 +20,30 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     const dataJSON = JSON.parse(dataStr) as {
         props: {
             pageProps: {
-                state: string
-            }
-        }
-    }
-    const { dataStore: { newsStore: { _newsList } } } = JSON.parse(dataJSON.props.pageProps.state) as {
-        dataStore: {
-            newsStore: {
-                _newsList:
-                {
-                    article_ID: string
-                    title: string
-                    shortTitle: string
-                    href: string
-                    imageHref: string
-                    provider: string
-                    date: string
-                    commentsCounter: string
-                    snippet: string
-                    openInNewTab: boolean
-                    mediumImageHref: string
-                    news_type: string
-                }[]
+                state: {
+                    newsStore: {
+                        _newsList:
+                        {
+                            article_ID: string
+                            title: string
+                            shortTitle: string
+                            href: string
+                            imageHref: string
+                            provider: string
+                            date: string
+                            commentsCounter: string
+                            snippet: string
+                            openInNewTab: boolean
+                            mediumImageHref: string
+                            news_type: string
+                        }[]
+                    }
+                }
             }
         }
     }
 
+    const { _newsList } = dataJSON.props.pageProps.state.newsStore
     _newsList.forEach(n => {
         const created = new Date(n.date)
         created.setTime(created.getTime() + 8 * 60 * 60 * 1000)
@@ -71,24 +69,22 @@ export const view: TNewsProvider['view'] = async (link) => {
     const dataJSON = JSON.parse(dataStr) as {
         props: {
             pageProps: {
-                state: string
-            }
-        }
-    }
-    const { dataStore: { newsStore: { _newsArticle } } } = JSON.parse(dataJSON.props.pageProps.state) as {
-        dataStore: {
-            newsStore: {
-                _newsArticle: {
-                    HEADLINE: string
-                    BODY: string
-                    last_updated: string
-                    related_image_big: string
-                    image_caption: string
+                state: {
+                    newsStore: {
+                        _newsArticle: {
+                            HEADLINE: string
+                            BODY: string
+                            last_updated: string
+                            related_image_big: string
+                            image_caption: string
+                        }
+                    }
                 }
             }
         }
     }
 
+    const { _newsArticle } = dataJSON.props.pageProps.state.newsStore
     const $ = load(_newsArticle.BODY)
     const contents: Content[] = [
         {

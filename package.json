@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "build": "eas build --platform android --local --profile preview",
     "build:web": "expo export --platform web",
-    "pages:dev": "wrangler pages dev --compatibility-date=2023-08-14 --port 3000 --proxy 8081",
+    "pages:dev": "wrangler pages dev --compatibility-date=2023-08-14 --ip 0.0.0.0 --port 3000 --proxy 8081",
     "pages:deploy": "npm run build:web && wrangler pages deploy ./dist"
   },
   "dependencies": {
@@ -34,7 +34,7 @@
     "@cloudflare/workers-types": "^4.20230821.0",
     "@types/react": "~18.2.45",
     "typescript": "^5.3.0",
-    "wrangler": "^3.5.1"
+    "wrangler": "^3.52.0"
   },
   "private": true
 }

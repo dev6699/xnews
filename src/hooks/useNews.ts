@@ -121,7 +121,7 @@ export const useNews = () => {
         setNewsLoading(false)
     }
 
-    const viewNews = async (link: string, index: number) => {
+    const viewNews = async (link: string, index: number, standalone = false) => {
         if (!canRetry.current) {
             canRetry.current = true
         }
@@ -132,7 +132,11 @@ export const useNews = () => {
             const data = await NewsService[p].view(link)
             if (providerRef.current === p) {
                 setNews({ index, data })
-                router.push(`/news/${p}/${toBase64(link)}?index=${index}`);
+                let url = `/news/${p}/${toBase64(link)}?index=${index}`
+                if (standalone) {
+                    url = url + '&standalone=1'
+                }
+                router.push(url);
             }
             setNewsLoading(false)
         } catch (err) {

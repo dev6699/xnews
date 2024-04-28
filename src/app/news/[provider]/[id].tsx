@@ -7,7 +7,9 @@ import { useNewsContext } from '../../../hooks/useNews';
 import { useKeyboardArrowNavigation } from '../../../hooks/useKeyboardArrowNavigation';
 
 export default function News() {
-    const params = useLocalSearchParams<{ id: string, index: string, provider: string }>()
+    const params = useLocalSearchParams<{ id: string, index: string, provider: string, standalone?: string }>()
+    const standalone = params.standalone == '1'
+
     const {
         state: {
             news,
@@ -38,7 +40,7 @@ export default function News() {
                 return
             }
             await switchProvider(params.provider)
-            await viewNews(fromBase64(params.id), +params.index)
+            await viewNews(fromBase64(params.id), +params.index, standalone)
         })()
     }, [news])
 
@@ -48,6 +50,9 @@ export default function News() {
     )
 
     const backNewsList = () => {
+        if (standalone) {
+            return
+        }
         closeNews()
         router.replace(`/news/${provider}`);
     }
@@ -68,11 +73,13 @@ export default function News() {
             visible={true}
             onRequestClose={backNewsList}>
             <View style={{ paddingHorizontal: 20, paddingTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ paddingRight: 20, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <View style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <Text style={{ fontSize: 24, fontWeight: '600' }} >{news.data.title}</Text>
                     <Text style={{ fontSize: 20 }}>{news.data.date}</Text>
                 </View>
-                <Pressable onPress={backNewsList} style={{ paddingHorizontal: 10, paddingVertical: 5 }}><Text style={{ fontSize: 30 }}>X</Text></Pressable>
+                {!standalone &&
+                    <Pressable onPress={backNewsList} style={{ paddingHorizontal: 10, paddingVertical: 5 }}><Text style={{ fontSize: 30 }}>X</Text></Pressable>
+                }
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 20, flex: 0 }}>
@@ -106,63 +113,66 @@ export default function News() {
                 }
             </ScrollView>
 
-            <View
-                style={{
-                    paddingVertical: 10,
-                    paddingHorizontal: 20,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                }}>
-                <Pressable
+            {!standalone
+                &&
+                <View
                     style={{
-                        height: 50,
-                        width: 50,
+                        paddingVertical: 10,
+                        paddingHorizontal: 20,
                         display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                    disabled={news.index === 0}
-                    onPress={viewPreviousNews}
-                >
-                    <Text style={{ fontSize: 20, color: 'teal' }}>{'<'}</Text>
-                </Pressable>
-                <Pressable
-                    disabled={speechState === 'load-next'}
-                    onPress={toggleSpeech}
-                    style={{
-                        height: 50,
-                        width: 50,
-                        borderRadius: 99,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    {
-                        speechState === 'play' ?
-                            <Text style={{ color: 'teal', fontSize: 30, top: -5 }}>◼</Text>
-                            :
-                            speechState === 'idle' ?
-                                <Text style={{ color: 'teal', fontSize: 16 }}>▶</Text>
+                    }}>
+                    <Pressable
+                        style={{
+                            height: 50,
+                            width: 50,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        disabled={news.index === 0}
+                        onPress={viewPreviousNews}
+                    >
+                        <Text style={{ fontSize: 20, color: 'teal' }}>{'<'}</Text>
+                    </Pressable>
+                    <Pressable
+                        disabled={speechState === 'load-next'}
+                        onPress={toggleSpeech}
+                        style={{
+                            height: 50,
+                            width: 50,
+                            borderRadius: 99,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        {
+                            speechState === 'play' ?
+                                <Text style={{ color: 'teal', fontSize: 30, top: -5 }}>◼</Text>
                                 :
-                                <ActivityIndicator />
-                    }
-                </Pressable>
-                <Pressable
-                    style={{
-                        height: 50,
-                        width: 50,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                    onPress={viewNextNews}
-                >
-                    <Text style={{ fontSize: 20, color: 'teal' }}>{'>'}</Text>
-                </Pressable>
-            </View>
+                                speechState === 'idle' ?
+                                    <Text style={{ color: 'teal', fontSize: 16 }}>▶</Text>
+                                    :
+                                    <ActivityIndicator />
+                        }
+                    </Pressable>
+                    <Pressable
+                        style={{
+                            height: 50,
+                            width: 50,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        onPress={viewNextNews}
+                    >
+                        <Text style={{ fontSize: 20, color: 'teal' }}>{'>'}</Text>
+                    </Pressable>
+                </View>
+            }
         </Modal>
     );
 }

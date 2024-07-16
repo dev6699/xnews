@@ -29,13 +29,16 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
             }
         }[]
     }).data) {
+        const created = new Date(d.attributes.publishOn.slice(0, -6))
+        created.setTime(created.getTime() + 8 * 60 * 60 * 1000)
+
         lists.push({
             image: d.links.uriImage,
             link: d.links.self,
             nid: d.id,
             title: d.attributes.title,
             category: '',
-            created: getTimeAgo(new Date(d.attributes.publishOn.slice(0, -6)).getTime())
+            created: getTimeAgo(created.getTime())
         })
     }
 
@@ -114,9 +117,12 @@ export const view: TNewsProvider['view'] = async (link) => {
         )
     })
 
+    const created = new Date(news.article.response.data.attributes.publishOn.slice(0, -6))
+    created.setTime(created.getTime() + 8 * 60 * 60 * 1000)
+
     return {
         title: news.article.response.data.attributes.title,
-        date: getTimeAgo(new Date(news.article.response.data.attributes.publishOn.slice(0, -6)).getTime()),
+        date: getTimeAgo(created.getTime()),
         contents: contents,
     }
 

@@ -6,7 +6,13 @@ export const onRequest: PagesFunction = async ({ request }: { request: Request }
     const targetURL = new URL(targetUrl)
     headers.set("origin", targetURL.origin)
     headers.set("host", targetURL.host)
-    headers.set("referer", targetURL.origin)
+    if (!headers.get('referer') || headers.get('referer')?.includes('localhost')) {
+        headers.set("referer", targetURL.origin)
+    }
+    const xCookie = headers.get("X-Cookie")
+    if (xCookie) {
+        headers.set("Cookie", xCookie)
+    }
 
     return fetch(targetUrl, {
         headers,
@@ -23,9 +29,15 @@ export const onRequest: PagesFunction = async ({ request }: { request: Request }
             newResponse = new Response()
         }
 
+        const setCookie = response.headers.get("Set-Cookie")
+        if (setCookie) {
+            newResponse.headers.set("X-Set-Cookie", setCookie)
+        }
         newResponse.headers.set('Access-Control-Allow-Origin', '*');
         newResponse.headers.set('Access-Control-Allow-Headers', '*');
         newResponse.headers.set('Access-Control-Allow-Methods', '*');
+        newResponse.headers.set('Access-Control-Expose-Headers', '*');
+        newResponse.headers.set('Access-Control-Allow-Credentials', 'true');
         newResponse.headers.set('Access-Control-Max-Age', '86400');
         return newResponse
     });

@@ -39,6 +39,7 @@ export const onRequest: PagesFunction = async ({ request }: { request: Request }
         newResponse.headers.set('Access-Control-Expose-Headers', '*');
         newResponse.headers.set('Access-Control-Allow-Credentials', 'true');
         newResponse.headers.set('Access-Control-Max-Age', '86400');
+        newResponse.headers.delete('x-frame-options')
         return newResponse
     });
 };

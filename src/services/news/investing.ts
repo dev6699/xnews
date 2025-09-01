@@ -22,20 +22,13 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
             pageProps: {
                 state: {
                     newsStore: {
-                        _newsList:
+                        _news:
                         {
-                            article_ID: string
+                            id: string
                             title: string
-                            shortTitle: string
-                            href: string
+                            link: string
+                            published_at: string
                             imageHref: string
-                            provider: string
-                            date: string
-                            commentsCounter: string
-                            snippet: string
-                            openInNewTab: boolean
-                            mediumImageHref: string
-                            news_type: string
                         }[]
                     }
                 }
@@ -43,20 +36,18 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
         }
     }
 
-    const { _newsList } = dataJSON.props.pageProps.state.newsStore
-    _newsList.forEach(n => {
-        const created = new Date(n.date)
-        created.setTime(created.getTime() + 8 * 60 * 60 * 1000)
+    const { _news } = dataJSON.props.pageProps.state.newsStore
+    _news.forEach(n => {
+        const created = new Date(n.published_at)
         lists.push({
-            link: n.href,
-            nid: n.href,
+            link: n.link,
+            nid: n.id,
             title: n.title,
             image: n.imageHref,
             category: '',
             created: getTimeAgo(created.getTime()),
         })
     })
-
 
     return lists
 }
@@ -71,12 +62,11 @@ export const view: TNewsProvider['view'] = async (link) => {
             pageProps: {
                 state: {
                     newsStore: {
-                        _newsArticle: {
-                            HEADLINE: string
-                            BODY: string
-                            last_updated: string
-                            related_image_big: string
-                            image_caption: string
+                        _article: {
+                            title: string
+                            body: string
+                            published_at: string
+                            imageHref: string
                         }
                     }
                 }
@@ -84,17 +74,15 @@ export const view: TNewsProvider['view'] = async (link) => {
         }
     }
 
-    const { _newsArticle } = dataJSON.props.pageProps.state.newsStore
-    const $ = load(_newsArticle.BODY)
+    const { _article } = dataJSON.props.pageProps.state.newsStore
+    const $ = load(_article.body)
     const contents: Content[] = [
         {
             type: 'image',
-            uri: $('img').attr('src') || `https://i-invdn-com.investing.com/news/${_newsArticle.related_image_big}`,
-            caption: $('img').attr('title') || _newsArticle.image_caption
+            uri: $('img').attr('src') ?? _article.imageHref,
+            caption: $('img').attr('title') ?? ''
         }
     ]
-
-
 
     $('p').each((_, el) => {
         const text = $data(el).text()
@@ -106,10 +94,9 @@ export const view: TNewsProvider['view'] = async (link) => {
         )
     })
 
-    const date = new Date(_newsArticle.last_updated)
-    date.setTime(date.getTime() + 8 * 60 * 60 * 1000)
+    const date = new Date(_article.published_at)
     return {
-        title: _newsArticle.HEADLINE,
+        title: _article.title,
         date: getTimeAgo(date.getTime()),
         contents: contents,
     }

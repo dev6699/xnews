@@ -74,24 +74,24 @@ export default function News() {
             onRequestClose={backNewsList}>
             <View style={{ paddingHorizontal: 20, paddingTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <Text style={{ fontSize: 24, fontWeight: '600' }} >{news.data.title}</Text>
-                    <Text style={{ fontSize: 20 }}>{news.data.date}</Text>
+                    <Text style={{ fontSize: 20, fontWeight: '600' }} >{news.data.title}</Text>
+                    <Text style={{ fontSize: 16 }}>{news.data.date}</Text>
                 </View>
                 {!standalone &&
                     <Pressable onPress={backNewsList} style={{ paddingHorizontal: 10, paddingVertical: 5 }}><Text style={{ fontSize: 30 }}>X</Text></Pressable>
                 }
             </View>
 
-            <ScrollView contentContainerStyle={{ padding: 20, flex: 0 }}>
+            <ScrollView contentContainerStyle={{ padding: 20, flex: 0, maxWidth: 768, marginHorizontal: 'auto' }}>
                 {
                     news.data.contents.map((c, i) => {
                         if (c.type === 'image') {
                             return (
-                                <View key={i} style={{ marginVertical: 10 }}>
+                                <View key={i} style={{ marginVertical: 5 }}>
                                     <Image source={{ uri: c.uri }}
                                         resizeMode='contain'
                                         style={{
-                                            height: 300,
+                                            height: 200,
                                             width: '100%'
                                         }}
                                     />
@@ -102,12 +102,12 @@ export default function News() {
 
                         if (c.type === 'subtitle') {
                             return (
-                                <Text key={i} style={{ fontWeight: 'bold', fontSize: 24, marginTop: 10 }}>{c.data}</Text>
+                                <Text key={i} style={{ fontWeight: 'bold', fontSize: 18, marginTop: 10 }}>{c.data}</Text>
                             )
                         }
 
                         return (
-                            <Text key={i} style={{ paddingVertical: 5, fontSize: 20, textAlign: 'justify' }}>{c.data}</Text>
+                            <Text key={i} style={{ paddingVertical: 5, fontSize: 16, textAlign: 'justify' }}>{c.data}</Text>
                         )
                     })
                 }

@@ -3,16 +3,17 @@ import { getTimeAgo } from '../../utils/time';
 import { BaseNews, Content, TNewsProvider } from './types';
 import { proxify, request } from './_proxy';
 
-const BASE_URl = proxify("https://www.enanyang.my")
+const _BASE_URL = "https://www.enanyang.my"
+const BASE_URl = proxify(_BASE_URL)
 
 type NewsList = {
+    id: number
+    permalink: string
     title: string
-    channel: string
-    link: string
-    clink: string
-    nid: number
+    cat_label: string
     created: string
-    teaser_image: string
+    post_date: string
+    image: string
 }
 
 let lists: BaseNews[] = []
@@ -21,16 +22,16 @@ export const list: TNewsProvider['list'] = async (page = 0) => {
     if (page === 0 && lists.length) {
         lists = []
     }
-    const data = await request(`${BASE_URl}/api/get/home/articles?page=${page}`).then(r => r.json());
 
+    const data = await request(`${BASE_URl}/api/category-posts?cat=2&offset=0&pagenum=${page + 1}&excludeids=`).then(r => r.json());
     for (const d of (data as NewsList[])) {
         lists.push({
-            link: d.link,
-            nid: `${d.nid}`,
+            link: d.permalink.replace(_BASE_URL, ''),
+            nid: `${d.id}`,
             title: d.title,
-            image: `${BASE_URl}/${d.teaser_image}`,
-            category: d.channel,
-            created: getTimeAgo(+d.created * 1000)
+            image: d.image,
+            category: d.cat_label,
+            created: getTimeAgo(new Date(d.post_date).getTime())
         })
     }
 
@@ -41,47 +42,29 @@ export const view: TNewsProvider['view'] = async (link: string) => {
     const data = await request(`${BASE_URl}/${link}`).then(r => r.text())
 
     const $ = load(data)
-
-    const title = $('#block-enanyang-base-page-title > .content > h1 > span').first().text()
-    const date = $('#block-enanyang-base-content .content > .ttr-post-date').text().split(' ').join('')
+    const title = $('.article-page-main-title').first().text()
+    const date = $('.article_date_meta').attr('data-datestr')!
     const contents: Content[] = []
-    $('#block-enanyang-base-content > .content > .ttr_post.node-article > header > .ttr_post_content_inner > .ttr_article > #main-content > .node-article-paragraphs > div > div > div').each((i, el) => {
-        const img = $(el).find('img').attr('src')
-        const imgCaption = $(el).find('p > span > span > span > span > em > span').text()
-        if (img) {
-            contents.push({
-                type: 'image',
-                uri: `${BASE_URl}/${img}`,
-                caption: imgCaption,
-            })
-        }
-
-        const subtitle = $(el).find('span > span > span > strong >span > span').text()
-        if (subtitle) {
-            contents.push({
-                type: 'subtitle',
-                data: subtitle
-            })
-        }
-
-        $(el).find('p').each((i, tel) => {
-            let text = $(tel).text()
-
-            if (i === 0 && [imgCaption, subtitle].includes(text)) {
-                return
-            }
-
-            if (text === '视频推荐：' || text === '视频推荐 ：') {
-                return
-            }
-
-            if (text) {
-                contents.push({
-                    type: 'text',
-                    data: text
-                })
-            }
+    const el = $('.article-page-post-content')
+    const img = $(el).find('figure > img').attr('src')
+    const imgCaption = $(el).find('figcaption').text()
+    if (img) {
+        contents.push({
+            type: 'image',
+            uri: img,
+            caption: imgCaption,
         })
+    }
+
+    $(el).find('p').each((i, tel) => {
+        let text = $(tel).text()
+
+        if (text) {
+            contents.push({
+                type: 'text',
+                data: text
+            })
+        }
     })
 
     return {

@@ -34,10 +34,11 @@ export default function NewsList() {
     return (
         <View style={{ flex: 1 }}>
 
-            <View>
+            <View >
                 <FlatList
                     horizontal
                     data={providers}
+                    contentContainerStyle={{ marginHorizontal: 'auto' }}
                     renderItem={({ item, index }) => {
                         const active = provider === item;
 
@@ -64,7 +65,7 @@ export default function NewsList() {
                 />
             </View>
 
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, maxWidth: 768, width: '100%', marginHorizontal: 'auto' }}>
                 {(newsLoading || listLoading) &&
                     <View style={{ position: 'absolute', backgroundColor: 'rgba(0,0,0,0.1)', top: 0, bottom: 0, right: 0, left: 0 }}>
                         <ActivityIndicator size={'large'} style={{ marginVertical: 200 }} />
@@ -118,23 +119,23 @@ export default function NewsList() {
                                         padding: 10,
                                         flex: 1,
                                         marginBottom: 10
-
                                     }}>
-                                    <View style={{ flex: 1, marginRight: 10, justifyContent: 'space-between' }}>
+                                    <Image
+                                        resizeMode='cover'
+                                        style={{
+                                            height: 80,
+                                            width: 120
+                                        }}
+                                        source={{ uri: item.image }}
+                                    />
+
+                                    <View style={{ flex: 1, marginLeft: 10, justifyContent: 'space-between' }}>
                                         <Text style={{ fontWeight: '600', fontSize: 16 }}>{item.title}</Text>
                                         <Text style={{ fontWeight: '400', color: 'teal', fontSize: 12 }}>{item.category}</Text>
                                         <Text style={{ color: 'gray', fontSize: 12 }}>{item.created}</Text>
                                     </View>
 
-                                    <Image
-                                        resizeMode='cover'
-                                        style={{
-                                            borderRadius: 20,
-                                            height: 90,
-                                            width: 90
-                                        }}
-                                        source={{ uri: item.image }}
-                                    />
+
                                 </View>
                             </Pressable>
                         )

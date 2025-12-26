@@ -4,11 +4,13 @@ import * as theedge from './theedege'
 import * as ny from './ny'
 import * as statdog from './statdog'
 import * as investing from './investing'
+import * as cointelegraph from './cointelegraph'
 // import * as sa from './seeking_alpha'
 
 export * from './types'
 
 export const NewsService: Record<string, TNewsProvider> = {
+    cointelegraph,
     ny,
     theedge,
     statdog,

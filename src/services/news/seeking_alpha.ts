@@ -7,13 +7,10 @@ import { proxify, request } from './_proxy';
 const BASE_URl = proxify("https://seekingalpha.com")
 
 
-let lists: BaseNews[] = []
 
 export const list: TNewsProvider['list'] = async (page = 0) => {
+    const lists: BaseNews[] = []
     page += 1
-    if (page === 1 && lists.length) {
-        lists = []
-    }
     const data = await request(`${BASE_URl}/api/v3/news?filter[category]=market-news::all&filter[since]=0&filter[until]=0&include=author,primaryTickers,secondaryTickers&isMounting=true&page[size]=25&page[number]=${page}`).then(r => r.json());
     console.log(data)
     for (const d of (data as {

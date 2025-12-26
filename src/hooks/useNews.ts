@@ -93,7 +93,7 @@ export const useNews = () => {
         setListLoading(true)
         try {
             const list = await NewsService[providerRef.current].list(page.current)
-            setNewsList(list)
+            setNewsList((old) => [...old, ...list])
             setListLoading(false)
         } catch (err) {
             console.error(err)

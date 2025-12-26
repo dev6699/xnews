@@ -7,31 +7,27 @@ const _BASE_URL = "https://www.enanyang.my"
 const BASE_URl = proxify(_BASE_URL)
 
 type NewsList = {
-    id: number
+    ID: number
     permalink: string
     title: string
     cat_label: string
     created: string
-    post_date: string
+    post_date_iso8601: string
     image: string
 }
 
-let lists: BaseNews[] = []
 
 export const list: TNewsProvider['list'] = async (page = 0) => {
-    if (page === 0 && lists.length) {
-        lists = []
-    }
-
+    const lists: BaseNews[] = []
     const data = await request(`${BASE_URl}/api/category-posts?cat=2&offset=0&pagenum=${page + 1}&excludeids=`).then(r => r.json());
     for (const d of (data as NewsList[])) {
         lists.push({
             link: d.permalink.replace(_BASE_URL, ''),
-            nid: `${d.id}`,
+            nid: `${d.ID}`,
             title: d.title,
             image: d.image,
             category: d.cat_label,
-            created: getTimeAgo(new Date(d.post_date).getTime())
+            created: getTimeAgo(new Date(d.post_date_iso8601).getTime())
         })
     }
 

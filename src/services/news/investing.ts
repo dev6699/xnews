@@ -6,13 +6,9 @@ import { dateStringToTimestamp, getTimeAgo } from '../../utils/time';
 
 const BASE_URl = proxify("https://www.investing.com")
 
-let lists: BaseNews[] = []
 
 export const list: TNewsProvider['list'] = async (page = 0) => {
-    if (page === 0 && lists.length) {
-        lists = []
-    }
-
+    const lists: BaseNews[] = []
     const data = await request(`${BASE_URl}/news/stock-market-news/${page + 1}`).then(r => r.text());
     const $ = load(data)
 

@@ -34,7 +34,7 @@ export default function NewsList() {
     return (
         <View style={{ flex: 1 }}>
 
-            <View >
+            <View>
                 <FlatList
                     horizontal
                     data={providers}

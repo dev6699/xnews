@@ -91,7 +91,7 @@ export default function News() {
                                     <Image source={{ uri: c.uri }}
                                         resizeMode='contain'
                                         style={{
-                                            height: 200,
+                                            height: 300,
                                             width: '100%'
                                         }}
                                     />

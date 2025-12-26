@@ -29,12 +29,9 @@ type NewsList = {
     summary: string
 }
 
-let lists: BaseNews[] = []
 
 export const list: TNewsProvider['list'] = async (page = 0) => {
-    if (page === 0 && lists.length) {
-        lists = []
-    }
+    const lists: BaseNews[] = []
     const offset = page * 10
 
     const data = await request(`${BASE_URl}/api/loadMoreOption?offset=${offset}&option=top`).then(r => r.json());
